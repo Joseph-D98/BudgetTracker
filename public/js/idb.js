@@ -3,32 +3,30 @@ window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndex
 let db;
 
 let request = window.indexedDB.open('budget', 1);
+    
 
-
-request.onerror = function (e) {
+request.onerror = function(e){
     console.log("error", e.target.errorCode);
 }
 
-request.onupgradeneeded = function (e) {
+request.onupgradeneeded= function (e) {
     const db = e.target.result;
-    db.createObjectStore('transactionStore', {
-        autoIncrement: true
-    });
+    db.createObjectStore('transactionStore', {autoIncrement: true});
 };
 
-request.onsuccess = function (e) {
-    db = e.target.result
+request.onsuccess = function(e){
+    db= e.target.result
 
-    if (navigator.onLine) {
+    if (navigator.onLine){
         uploadTransaction()
     }
 };
 
 
 //submit record when offline
-function saveRecord(record) {
+function saveRecord(record){
     //start transaction
-    const tx = db.transaction(['transactionStore'], 'readwrite');
+    const tx = db.transaction(['transactionStore'], 'readwrite' );
     //open object stor
     const txObjectStore = tx.objectStore('transactionStore');
     //add record
@@ -37,39 +35,39 @@ function saveRecord(record) {
 
 }
 
-function uploadTransaction() {
+function uploadTransaction(){
     //start transaction
-    const tx = db.transaction(['transactionStore'], 'readwrite');
+    const tx = db.transaction(['transactionStore'], 'readwrite' );
     //open object store
     const txObjectStore = tx.objectStore('transactionStore');
     //get all records
     const getAll = txObjectStore.getAll()
 
     getAll.onsuccess = function () {
-        if (getAll.result.length > 0) {
+        if (getAll.result.length > 0){
             fetch('/api/transaction/bulk', {
-                    method: 'POST',
-                    body: JSON.stringify(getAll.result),
-                    headers: {
-                        Accept: 'application/json, text/plain */*',
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(fetchResponse => {
-                    if (fetchResponse.message) {
-                        throw new Error(fetchResponse)
-                    }
-                    //open another transaction
-                    const tx = db.transaction(['transactionStore'], 'readwrite');
-                    const txObjectStore = tx.objectStore('transactionStore');
-                    txObjectStore.clear();
+                method: 'POST',
+                body: JSON.stringify(getAll.result),
+                headers: {
+                    Accept: 'application/json, text/plain */*',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(fetchResponse => {
+                if(fetchResponse.message){
+                    throw new Error(fetchResponse)
+                }
+                //open another transaction
+                const tx = db.transaction(['transactionStore'], 'readwrite' );
+                const txObjectStore = tx.objectStore('transactionStore');
+                txObjectStore.clear();
 
-                    alert('Transactions have been submitted!');
-                })
-                .catch(err => {
-                    console.log(err)
-                })
+                alert('Transactions have been submitted!');
+            })
+            .catch(err =>{
+                console.log(err)
+            })
         }
     }
 }
